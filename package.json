@@ -1,0 +1,10 @@
+{
+    "private": true,
+    "devDependencies": {
+        "@commitlint/cli": "^16.2.3",
+        "@commitlint/config-conventional": "^16.2.1",
+        "@semantic-release/changelog": "6.0.1",
+        "@semantic-release/gitlab": "7.0.4",
+        "semantic-release": "^19.0.2"
+    }
+}

@@ -1,0 +1,26 @@
+{
+  "name": "forepath/laravel-s3-server",
+  "description": "Lightweight Laravel-compatible S3 protocol server",
+  "type": "library",
+  "license": "MIT",
+  "autoload": {
+    "psr-4": {
+      "LaravelS3Server\\": "src/"
+    }
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "LaravelS3Server\\S3ServiceProvider"
+      ]
+    }
+  },
+  "require": {
+    "php": "^8.1",
+    "laravel/framework": "^10|^11|^12"
+  },
+  "require-dev": {
+    "laravel/pint": "^1.13",
+    "phpstan/phpstan": "^1.10"
+  }
+}
