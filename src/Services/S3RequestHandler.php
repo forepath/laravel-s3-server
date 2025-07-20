@@ -48,6 +48,7 @@ class S3RequestHandler
         return match ($method) {
             'PUT'    => $this->putObject($bucket, $key, $request),
             'GET'    => $key ? $this->getObject($bucket, $key) : $this->listBucket($bucket),
+            'HEAD'   => $this->headObject($bucket, $key),
             'DELETE' => $this->deleteObject($bucket, $key),
             default  => response('Not Implemented', 501),
         };
@@ -88,7 +89,35 @@ class S3RequestHandler
             return response('Not Found', 404);
         }
 
-        return response($content, 200)->header('Content-Type', 'application/octet-stream');
+        return response($content, 200)
+            ->header('Content-Type', 'application/octet-stream')
+            ->header('Content-Length', strlen($content));
+    }
+
+    /**
+     * Head an object from the storage (check if exists and get metadata).
+     *
+     * @param string $bucket
+     * @param string $key
+     *
+     * @return Response
+     */
+    protected function headObject(string $bucket, string $key): Response
+    {
+        $path = "$bucket/$key";
+
+        // Check if the object exists by trying to get it
+        $content = $this->storageDriver->get($path);
+
+        if ($content === null) {
+            return response('Not Found', 404);
+        }
+
+        // Return empty response with 200 status for HEAD requests
+        // The content is not included in HEAD responses, only headers
+        return response('', 200)
+            ->header('Content-Type', 'application/octet-stream')
+            ->header('Content-Length', strlen($content));
     }
 
     /**
