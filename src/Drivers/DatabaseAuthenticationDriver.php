@@ -6,7 +6,7 @@ namespace LaravelS3Server\Drivers;
 
 use DateTime;
 use Illuminate\Http\Request;
-use LaravelS3Server\Contracts\AuthenticationProviderInterface;
+use LaravelS3Server\Contracts\AuthenticationDriver;
 use LaravelS3Server\Models\S3AccessCredential;
 
 /**
@@ -16,7 +16,7 @@ use LaravelS3Server\Models\S3AccessCredential;
  *
  * @author Marcel Menk <marcel.menk@ipvx.io>
  */
-class DatabaseAuthenticationDriver implements AuthenticationProviderInterface
+class DatabaseAuthenticationDriver implements AuthenticationDriver
 {
     /**
      * Authenticate the incoming HTTP request.

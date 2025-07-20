@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace LaravelS3Server;
 
 use Illuminate\Support\ServiceProvider;
-use LaravelS3Server\Contracts\AuthenticationProviderInterface;
+use LaravelS3Server\Contracts\AuthenticationDriver;
 use LaravelS3Server\Http\Middleware\S3SignatureMiddleware;
 
 /**
@@ -43,7 +43,7 @@ class S3ServiceProvider extends ServiceProvider
         $this->mergeConfigFrom(__DIR__ . '/../config/s3server.php', 's3');
 
         // Bind the authentication provider interface to the configured driver
-        $this->app->bind(AuthenticationProviderInterface::class, function ($app) {
+        $this->app->bind(AuthenticationDriver::class, function ($app) {
             $authDriverClass = config('s3server.auth_driver');
 
             return $app->make($authDriverClass);

@@ -13,7 +13,7 @@ use Illuminate\Http\Request;
  *
  * @author Marcel Menk <marcel.menk@ipvx.io>
  */
-interface AuthenticationProviderInterface
+interface AuthenticationDriver
 {
     /**
      * Authenticate the incoming HTTP request.
