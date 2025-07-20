@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.3](https://github.com/forepath/laravel-s3-server/compare/v1.1.2...v1.1.3) (2025-07-20)
+
+
+### Bug Fixes
+
+* s3 bucket authentication checks ([7129ba2](https://github.com/forepath/laravel-s3-server/commit/7129ba2d941dfa39b3fc7d4e7f7a971ecec92687))
+
 ## [1.1.2](https://github.com/forepath/laravel-s3-server/compare/v1.1.1...v1.1.2) (2025-07-20)
 
 
