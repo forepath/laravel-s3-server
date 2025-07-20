@@ -54,15 +54,104 @@ class FileStorageDriver implements S3StorageDriver
     }
 
     /**
-     * List all files in a directory.
+     * List all files and prefixes in a directory.
      *
      * @param string $prefix
+     * @param array  $options
      *
-     * @return array
+     * @return array{files: array<string>, prefixes: array<string>, isTruncated: bool, nextMarker: ?string}
      */
-    public function list(string $prefix): array
+    public function list(string $prefix, array $options = []): array
     {
-        return Storage::files($prefix);
+        $maxKeys     = $options['maxKeys'] ?? 1000;
+        $marker      = $options['marker'] ?? null;
+        $recursive   = $options['recursive'] ?? false;
+        $queryPrefix = $options['prefix'] ?? '';
+
+        // Build the full prefix to search under
+        $searchPrefix = $prefix;
+
+        if (!empty($queryPrefix)) {
+            $searchPrefix = rtrim($prefix, '/') . '/' . ltrim($queryPrefix, $prefix . '/');
+        }
+
+        // Get all files under the search prefix
+        $allFiles = Storage::allFiles($searchPrefix);
+
+        if ($recursive) {
+            // Return all files recursively, filtered by the query prefix
+            $files = array_filter($allFiles, function ($file) use ($searchPrefix) {
+                return str_starts_with($file, $searchPrefix);
+            });
+            $prefixes = [];
+        } else {
+            // Filter to only immediate files and directories
+            $files       = [];
+            $directories = [];
+
+            foreach ($allFiles as $file) {
+                // Get the relative path from the search prefix
+                $relativePath = substr($file, strlen($searchPrefix));
+                $relativePath = ltrim($relativePath, '/');
+
+                // If there's no slash, it's an immediate file
+                if (strpos($relativePath, '/') === false) {
+                    $files[] = $file;
+                } else {
+                    // It's in a subdirectory, extract the directory name
+                    $dirName = explode('/', $relativePath)[0];
+
+                    // Handle root bucket case - don't add extra slashes
+                    if (empty($searchPrefix)) {
+                        $dirPath = $dirName;
+                    } else {
+                        $dirPath = $searchPrefix . '/' . $dirName;
+                    }
+
+                    if (!in_array($dirPath, $directories)) {
+                        $directories[] = $dirPath;
+                    }
+                }
+            }
+
+            // Convert directories to S3-style prefixes
+            $prefixes = array_map(function ($directory) {
+                return $directory . '/';
+            }, $directories);
+        }
+
+        // Apply marker filtering to both files and prefixes
+        if ($marker) {
+            $files    = array_filter($files, fn ($file) => $file > $marker);
+            $prefixes = array_filter($prefixes, fn ($prefix) => $prefix > $marker);
+        }
+
+        // Combine files and prefixes for pagination
+        $allItems = array_merge($files, $prefixes);
+        sort($allItems);
+
+        // Apply max-keys limit
+        $isTruncated = count($allItems) > $maxKeys;
+        $allItems    = array_slice($allItems, 0, $maxKeys);
+
+        // Separate files and prefixes from the paginated results
+        $resultFiles    = [];
+        $resultPrefixes = [];
+
+        foreach ($allItems as $item) {
+            if (str_ends_with($item, '/')) {
+                $resultPrefixes[] = $item;
+            } else {
+                $resultFiles[] = $item;
+            }
+        }
+
+        return [
+            'files'       => $resultFiles,
+            'prefixes'    => $resultPrefixes,
+            'isTruncated' => $isTruncated,
+            'nextMarker'  => $isTruncated ? end($allItems) : null,
+        ];
     }
 
     /**
