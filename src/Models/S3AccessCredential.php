@@ -34,6 +34,7 @@ class S3AccessCredential extends Model
         'access_key_id',
         'secret_access_key',
         'description',
+        'bucket',
     ];
 
     /**

@@ -12,6 +12,7 @@ A lightweight, Laravel-compatible Amazon S3 protocol server that allows you to r
 - 🔐 **Full S3 Protocol Support** - Compatible with AWS S3 API v4
 - 🔐 **Secure Authentication** - AWS Signature Version 4 (AWS4-HMAC-SHA256) authentication
 - 💾 **Database-Backed Credentials** - Store and manage S3 credentials in your database
+- 🔒 **Bucket-Level Access Control** - Restrict credentials to specific buckets for enhanced security
 - 🔒 **Encrypted Storage** - Secret keys are automatically encrypted using Laravel's encryption
 - 🔒 **Flexible Storage Drivers** - File-based storage with extensible driver system
 - 🛡️ **Laravel Integration** - Seamless integration with Laravel's service container
@@ -50,6 +51,8 @@ Run the migrations to create the necessary database tables:
 php artisan migrate
 ```
 
+This will create the `s3_access_credentials` table with support for bucket restrictions.
+
 ### 3. Create S3 Credentials
 
 Add S3 credentials to your database:
@@ -61,6 +64,7 @@ S3AccessCredential::create([
     'access_key_id' => 'AKIAIOSFODNN7EXAMPLE',
     'secret_access_key' => 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY',
     'description' => 'Development credentials',
+    'bucket' => null, // Optional: restrict to specific bucket
 ]);
 ```
 
@@ -157,13 +161,30 @@ echo $result['Body'];
 ```php
 use LaravelS3Server\Models\S3AccessCredential;
 
-// Create a new credential
+// Create a new credential with access to any bucket
 $credential = S3AccessCredential::create([
     'access_key_id' => 'AKIAIOSFODNN7EXAMPLE',
     'secret_access_key' => 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY',
     'description' => 'Development credentials',
+    'bucket' => null, // null means access to any bucket
+]);
+
+// Create a credential restricted to a specific bucket
+$restrictedCredential = S3AccessCredential::create([
+    'access_key_id' => 'AKIAIOSFODNN7EXAMPLE2',
+    'secret_access_key' => 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY2',
+    'description' => 'Production credentials for user-uploads bucket',
+    'bucket' => 'user-uploads', // Only access to 'user-uploads' bucket
 ]);
 ```
+
+#### Bucket Restrictions
+
+The S3 server supports bucket-level access control. You can restrict credentials to access only specific buckets:
+
+- **No Restriction**: Set `bucket` to `null` to allow access to any bucket
+- **Single Bucket**: Set `bucket` to a specific bucket name to restrict access to only that bucket
+- **Security**: Credentials with bucket restrictions will receive 401 Unauthorized when trying to access other buckets
 
 #### Listing Credentials
 
@@ -324,11 +345,12 @@ aws s3 rm s3://my-bucket/test.txt --endpoint-url http://localhost:8000/s3
 ```php
 use LaravelS3Server\Models\S3AccessCredential;
 
-// Create test credentials
+// Create test credentials with bucket restriction
 S3AccessCredential::create([
     'access_key_id' => 'test-key',
     'secret_access_key' => 'test-secret',
-    'description' => 'Test credentials',
+    'description' => 'Test credentials for test-bucket',
+    'bucket' => 'test-bucket',
 ]);
 
 // Test with AWS SDK

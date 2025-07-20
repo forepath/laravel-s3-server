@@ -41,15 +41,32 @@ class DatabaseAuthenticationDriver implements AuthenticationProviderInterface
             return false;
         }
 
-        // Get the secret key from database
-        $secretKey = $this->getSecretKeyByAccessKeyId($accessKeyId);
+        // Get the credential from database
+        $credential = $this->getCredentialByAccessKeyId($accessKeyId);
 
-        if (!$secretKey) {
+        if (!$credential) {
+            return false;
+        }
+
+        // Check bucket access permission
+        if (!$this->checkBucketAccess($request, $credential)) {
             return false;
         }
 
         // Verify the signature
-        return $this->verifySignature($request, $secretKey, $authorization);
+        return $this->verifySignature($request, $credential->secret_access_key, $authorization);
+    }
+
+    /**
+     * Get the credential by access key id.
+     *
+     * @param string $accessKeyId
+     *
+     * @return S3AccessCredential|null
+     */
+    public function getCredentialByAccessKeyId(string $accessKeyId): ?S3AccessCredential
+    {
+        return S3AccessCredential::where('access_key_id', $accessKeyId)->first();
     }
 
     /**
@@ -61,9 +78,40 @@ class DatabaseAuthenticationDriver implements AuthenticationProviderInterface
      */
     public function getSecretKeyByAccessKeyId(string $accessKeyId): ?string
     {
-        $credential = S3AccessCredential::where('access_key_id', $accessKeyId)->first();
+        $credential = $this->getCredentialByAccessKeyId($accessKeyId);
 
         return $credential ? $credential->secret_access_key : null;
+    }
+
+    /**
+     * Check if the credential has access to the requested bucket.
+     *
+     * @param Request            $request
+     * @param S3AccessCredential $credential
+     *
+     * @return bool
+     */
+    private function checkBucketAccess(Request $request, S3AccessCredential $credential): bool
+    {
+        // Extract bucket from the request path
+        $path = $request->getPathInfo();
+
+        // The path format is /s3/{bucket}/{key?}
+        $pathParts = explode('/', trim($path, '/'));
+
+        if (count($pathParts) < 2 || $pathParts[0] !== 's3') {
+            return false;
+        }
+
+        $requestedBucket = $pathParts[1];
+
+        // If credential has no bucket restriction (bucket is null), allow access to any bucket
+        if ($credential->bucket === null) {
+            return true;
+        }
+
+        // Check if the requested bucket matches the credential's allowed bucket
+        return $credential->bucket === $requestedBucket;
     }
 
     /**
