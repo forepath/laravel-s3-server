@@ -36,6 +36,9 @@ class FileStorageDriver implements S3StorageDriver
      */
     public function put(string $path, string $content): void
     {
+        // Ensure the directory structure exists before writing the file
+        $this->ensureDirectoryExists($path);
+
         Storage::put($path, $content);
     }
 
@@ -46,6 +49,7 @@ class FileStorageDriver implements S3StorageDriver
      */
     public function delete(string $path): void
     {
+        Storage::deleteDirectory($path);
         Storage::delete($path);
     }
 
@@ -59,5 +63,25 @@ class FileStorageDriver implements S3StorageDriver
     public function list(string $prefix): array
     {
         return Storage::files($prefix);
+    }
+
+    /**
+     * Ensure that the directory structure exists for the given path.
+     *
+     * @param string $path
+     */
+    private function ensureDirectoryExists(string $path): void
+    {
+        $directory = dirname($path);
+
+        // Skip if it's the root directory or current directory
+        if ($directory === '.' || $directory === '/' || $directory === '') {
+            return;
+        }
+
+        // Create the directory if it doesn't exist
+        if (!Storage::exists($directory)) {
+            Storage::makeDirectory($directory);
+        }
     }
 }
