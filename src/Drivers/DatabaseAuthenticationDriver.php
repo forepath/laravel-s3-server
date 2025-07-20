@@ -168,7 +168,7 @@ class DatabaseAuthenticationDriver implements AuthenticationDriver
         $service   = $signatureComponents['service'] ?? 's3';
 
         // Build the canonical request
-        $canonicalRequest = $this->buildCanonicalRequest($request);
+        $canonicalRequest = $this->buildCanonicalRequest($request, $signatureComponents);
 
         // Build the string to sign
         $stringToSign = $this->buildStringToSign($dateTime, $region, $service, $canonicalRequest);
@@ -219,10 +219,11 @@ class DatabaseAuthenticationDriver implements AuthenticationDriver
      * Build the canonical request.
      *
      * @param Request $request
+     * @param array   $signatureComponents
      *
      * @return string
      */
-    private function buildCanonicalRequest(Request $request): string
+    private function buildCanonicalRequest(Request $request, array $signatureComponents): string
     {
         $method      = $request->method();
         $uri         = $request->getRequestUri();
@@ -236,22 +237,20 @@ class DatabaseAuthenticationDriver implements AuthenticationDriver
             $queryString = http_build_query($queryParams);
         }
 
-        // Build canonical headers
-        $headers = [];
+        // Get the signed headers from the authorization header
+        $signedHeadersList = explode(';', $signatureComponents['signed_headers']);
 
-        foreach ($request->headers->all() as $name => $values) {
-            $name           = strtolower($name);
-            $value          = implode(',', $values);
-            $headers[$name] = trim($value);
-        }
-        ksort($headers);
-
+        // Build canonical headers - only include signed headers
         $canonicalHeaders = '';
         $signedHeaders    = '';
 
-        foreach ($headers as $name => $value) {
-            $canonicalHeaders .= $name . ':' . $value . "\n";
-            $signedHeaders .= $name . ';';
+        foreach ($signedHeadersList as $headerName) {
+            $headerValue = $request->header($headerName);
+
+            if ($headerValue !== null) {
+                $canonicalHeaders .= strtolower($headerName) . ':' . trim($headerValue) . "\n";
+                $signedHeaders .= strtolower($headerName) . ';';
+            }
         }
         $signedHeaders = rtrim($signedHeaders, ';');
 
