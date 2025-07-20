@@ -38,11 +38,12 @@ interface S3StorageDriver
     public function delete(string $path): void;
 
     /**
-     * List all files in a directory.
+     * List all files and prefixes in a directory.
      *
      * @param string $prefix
+     * @param array  $options
      *
-     * @return array
+     * @return array{files: array<string>, prefixes: array<string>, isTruncated: bool, nextMarker: ?string}
      */
-    public function list(string $prefix): array;
+    public function list(string $prefix, array $options = []): array;
 }

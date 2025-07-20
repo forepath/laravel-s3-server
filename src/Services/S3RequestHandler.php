@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace LaravelS3Server\Services;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use LaravelS3Server\Contracts\S3StorageDriver;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -46,8 +47,10 @@ class S3RequestHandler
         $method = $request->method();
 
         return match ($method) {
-            'PUT'    => $this->putObject($bucket, $key, $request),
-            'GET'    => $key ? $this->getObject($bucket, $key) : $this->listBucket($bucket),
+            'PUT' => $this->putObject($bucket, $key, $request),
+            'GET' => !Storage::directoryExists($bucket . '/' . $key) && $key ?
+                $this->getObject($bucket, $key) :
+                $this->listBucket($bucket, $key),
             'HEAD'   => $this->headObject($bucket, $key),
             'DELETE' => $this->deleteObject($bucket, $key),
             default  => response('Not Implemented', 501),
@@ -140,14 +143,56 @@ class S3RequestHandler
     /**
      * List a bucket.
      *
-     * @param string $bucket
+     * @param string  $bucket
+     * @param ?string $key
      *
      * @return Response
      */
-    protected function listBucket(string $bucket): Response
+    protected function listBucket(string $bucket, ?string $key = null): Response
     {
-        $files = $this->storageDriver->list($bucket);
-        $xml   = view('s3server::s3.list', ['bucket' => $bucket, 'files' => $files])->render();
+        $path = $key ? "$bucket/$key" : $bucket;
+
+        // Get S3 query parameters
+        $request   = request();
+        $delimiter = $request->query('delimiter');
+        $prefix    = $request->query('prefix', $key ? "$bucket/$key" : $bucket);
+        $maxKeys   = (int) $request->query('max-keys', 1000);
+        $marker    = $request->query('marker');
+
+        // Determine if listing should be recursive based on delimiter
+        $recursive = $delimiter === null || $delimiter === '';
+
+        $listing = $this->storageDriver->list($path, [
+            'delimiter' => $delimiter,
+            'prefix'    => $prefix,
+            'maxKeys'   => $maxKeys,
+            'marker'    => $marker,
+            'recursive' => $recursive,
+        ]);
+
+        // Convert full storage paths to relative S3 keys for display
+        $files = array_map(function ($file) use ($bucket) {
+            // Remove the bucket prefix to get relative key
+            return str_replace("$bucket/", '', $file);
+        }, $listing['files']);
+
+        $prefixes = array_map(function ($prefixPath) use ($bucket) {
+            // Remove the bucket prefix to get relative prefix
+            return str_replace("$bucket/", '', $prefixPath);
+        }, $listing['prefixes']);
+
+        $xml = view('s3server::s3.list', [
+            'bucket'      => $bucket,
+            'files'       => $files,
+            'prefixes'    => $prefixes,
+            'fullPaths'   => $listing['files'], // Keep full paths for storage operations
+            'delimiter'   => $delimiter,
+            'prefix'      => $prefix,
+            'maxKeys'     => $maxKeys,
+            'marker'      => $marker,
+            'isTruncated' => $listing['isTruncated'] ?? false,
+            'nextMarker'  => $listing['nextMarker'] ?? null,
+        ])->render();
 
         return response($xml, 200)->header('Content-Type', 'application/xml');
     }
