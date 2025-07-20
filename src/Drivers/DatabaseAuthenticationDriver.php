@@ -225,11 +225,14 @@ class DatabaseAuthenticationDriver implements AuthenticationDriver
      */
     private function buildCanonicalRequest(Request $request, array $signatureComponents): string
     {
-        $method      = $request->method();
-        $uri         = $request->getRequestUri();
+        $method = $request->method();
+
+        // Get the path without query string
+        $path = $request->getPathInfo();
+
+        // Get and sort query parameters
         $queryString = $request->getQueryString() ?: '';
 
-        // Sort query parameters
         if ($queryString) {
             $queryParams = [];
             parse_str($queryString, $queryParams);
@@ -258,7 +261,7 @@ class DatabaseAuthenticationDriver implements AuthenticationDriver
         $payloadHash = hash('sha256', $request->getContent() ?: '');
 
         return $method . "\n" .
-               $uri . "\n" .
+               $path . "\n" .
                $queryString . "\n" .
                $canonicalHeaders . "\n" .
                $signedHeaders . "\n" .
