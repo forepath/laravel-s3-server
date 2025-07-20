@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.1](https://github.com/forepath/laravel-s3-server/compare/v1.1.0...v1.1.1) (2025-07-20)
+
+
+### Bug Fixes
+
+* file upload and delete operations ([5b54d8a](https://github.com/forepath/laravel-s3-server/commit/5b54d8a21cf2511c5536369ae7c5befe46951303))
+
 ## [1.1.0](https://github.com/forepath/laravel-s3-server/compare/v1.0.1...v1.1.0) (2025-07-20)
 
 
