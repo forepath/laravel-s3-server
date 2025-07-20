@@ -14,4 +14,4 @@ Route::any('/s3/{bucket}/{key?}', function ($bucket, $key = null) {
     $handler = new S3RequestHandler(fn () => app(config('s3server.storage_driver')));
 
     return $handler->handle(request(), $bucket, $key);
-})->middleware(config('s3server.auth') ? ['s3.auth'] : []);
+})->where('key', '.*')->middleware(config('s3server.auth') ? ['s3.auth'] : []);
