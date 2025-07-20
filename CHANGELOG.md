@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.0](https://github.com/forepath/laravel-s3-server/compare/v1.1.4...v1.2.0) (2025-07-20)
+
+
+### Features
+
+* prefix-based object listing support ([a086021](https://github.com/forepath/laravel-s3-server/commit/a086021471dda10d820c22075218b4c7e3a45d5a))
+
 ## [1.1.4](https://github.com/forepath/laravel-s3-server/compare/v1.1.3...v1.1.4) (2025-07-20)
 
 
