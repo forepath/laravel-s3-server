@@ -2,3 +2,7 @@ parameters:
     level: 0
     paths:
         - src
+        - database
+        - config
+        - resources
+        - routes
