@@ -7,7 +7,7 @@ namespace LaravelS3Server\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use LaravelS3Server\Contracts\AuthenticationProviderInterface;
+use LaravelS3Server\Contracts\AuthenticationDriver;
 
 /**
  * S3 signature middleware.
@@ -19,9 +19,9 @@ use LaravelS3Server\Contracts\AuthenticationProviderInterface;
 class S3SignatureMiddleware
 {
     /**
-     * @var AuthenticationProviderInterface
+     * @var AuthenticationDriver
      */
-    protected AuthenticationProviderInterface $authProvider;
+    protected AuthenticationDriver $authDriver;
 
     /**
      * Constructor.
@@ -30,7 +30,7 @@ class S3SignatureMiddleware
     {
         $authDriverClass = config('s3server.auth_driver');
 
-        $this->authProvider = app($authDriverClass);
+        $this->authDriver = app($authDriverClass);
     }
 
     /**
@@ -43,7 +43,7 @@ class S3SignatureMiddleware
      */
     public function handle(Request $request, Closure $next): mixed
     {
-        if (! $this->authProvider->authenticate($request)) {
+        if (! $this->authDriver->authenticate($request)) {
             return response('Unauthorized', Response::HTTP_UNAUTHORIZED);
         }
 

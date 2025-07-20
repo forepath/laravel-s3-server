@@ -220,7 +220,7 @@ The package uses a driver-based authentication system. The default `DatabaseAuth
 
 #### Custom Authentication Driver
 
-Create a custom authentication driver by implementing the `AuthenticationProviderInterface`:
+Create a custom authentication driver by implementing the `AuthenticationDriver`:
 
 ```php
 <?php
@@ -228,9 +228,9 @@ Create a custom authentication driver by implementing the `AuthenticationProvide
 namespace App\Services;
 
 use Illuminate\Http\Request;
-use LaravelS3Server\Contracts\AuthenticationProviderInterface;
+use LaravelS3Server\Contracts\AuthenticationDriver;
 
-class CustomAuthDriver implements AuthenticationProviderInterface
+class CustomAuthDriver implements AuthenticationDriver
 {
     public function authenticate(Request $request): bool
     {
