@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.0](https://github.com/forepath/laravel-s3-server/compare/v1.0.1...v1.1.0) (2025-07-20)
+
+
+### Features
+
+* bucket specific access credentials ([d28727c](https://github.com/forepath/laravel-s3-server/commit/d28727c5021656d5f6038756aba1b990e0ce0cd7))
+
 ## [1.0.1](https://github.com/forepath/laravel-s3-server/compare/v1.0.0...v1.0.1) (2025-07-19)
 
 
