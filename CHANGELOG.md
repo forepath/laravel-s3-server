@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.2](https://github.com/forepath/laravel-s3-server/compare/v1.1.1...v1.1.2) (2025-07-20)
+
+
+### Bug Fixes
+
+* s3 head operation ([53ff445](https://github.com/forepath/laravel-s3-server/commit/53ff445c837bc6b5d34c80b4bd6a829d90d4ef27))
+
 ## [1.1.1](https://github.com/forepath/laravel-s3-server/compare/v1.1.0...v1.1.1) (2025-07-20)
 
 
