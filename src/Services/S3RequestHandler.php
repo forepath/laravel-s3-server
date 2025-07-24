@@ -48,7 +48,7 @@ class S3RequestHandler
 
         return match ($method) {
             'PUT' => $this->putObject($bucket, $key, $request),
-            'GET' => !Storage::directoryExists($bucket . '/' . $key) && $key ?
+            'GET' => !Storage::directoryExists(config('s3server.storage_path') . $bucket . '/' . $key) && $key ?
                 $this->getObject($bucket, $key) :
                 $this->listBucket($bucket, $key),
             'HEAD'   => $this->headObject($bucket, $key),

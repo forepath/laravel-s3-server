@@ -25,7 +25,7 @@ class FileStorageDriver implements S3StorageDriver
      */
     public function get(string $path): ?string
     {
-        return Storage::get($path);
+        return Storage::get(config('s3server.storage_path') . $path);
     }
 
     /**
@@ -39,7 +39,7 @@ class FileStorageDriver implements S3StorageDriver
         // Ensure the directory structure exists before writing the file
         $this->ensureDirectoryExists($path);
 
-        Storage::put($path, $content);
+        Storage::put(config('s3server.storage_path') . $path, $content);
     }
 
     /**
@@ -49,8 +49,8 @@ class FileStorageDriver implements S3StorageDriver
      */
     public function delete(string $path): void
     {
-        Storage::deleteDirectory($path);
-        Storage::delete($path);
+        Storage::deleteDirectory(config('s3server.storage_path') . $path);
+        Storage::delete(config('s3server.storage_path') . $path);
     }
 
     /**
@@ -76,7 +76,7 @@ class FileStorageDriver implements S3StorageDriver
         }
 
         // Get all files under the search prefix
-        $allFiles = Storage::allFiles($searchPrefix);
+        $allFiles = Storage::allFiles(config('s3server.storage_path') . $searchPrefix);
 
         if ($recursive) {
             // Return all files recursively, filtered by the query prefix
@@ -169,8 +169,8 @@ class FileStorageDriver implements S3StorageDriver
         }
 
         // Create the directory if it doesn't exist
-        if (!Storage::exists($directory)) {
-            Storage::makeDirectory($directory);
+        if (!Storage::exists(config('s3server.storage_path') . $directory)) {
+            Storage::makeDirectory(config('s3server.storage_path') . $directory);
         }
     }
 }
