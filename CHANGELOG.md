@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.3.0](https://github.com/forepath/laravel-s3-server/compare/v1.2.1...v1.3.0) (2025-07-24)
+
+
+### Features
+
+* dynamic filestorage path ([3be0522](https://github.com/forepath/laravel-s3-server/commit/3be052212e1b188b7ccd3c69745802215418309b))
+
 ## [1.2.1](https://github.com/forepath/laravel-s3-server/compare/v1.2.0...v1.2.1) (2025-07-20)
 
 
